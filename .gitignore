@@ -1,0 +1,8 @@
+.vscode
+.ipynb_checkpoints
+*.cpython*
+*downloads/
+*.csv
+*.txt
+*.data
+
