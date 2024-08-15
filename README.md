@@ -22,3 +22,27 @@ Docentes: Martin Palazzo, Nicolas Aguirre, Santiago Chas.
 ## Clases Grabadas 2021
 [Link a clases grabadas](https://drive.google.com/drive/folders/1QxDKVhP1-FkBX-OwvqnN3ierbIAOF_PQ?usp=sharing)
 
+
+## Contenido:
+
+| Clase | Título | Tema | Tipo |
+| --- | ----------- | ------ | --- |
+| 00 | [Slides Introduccion a la Ciencia de Datos y variables aleatorias]                                                                                  | Intro a la Ciencia de Datos | Teoría |
+| 01 | [Slides Analisis Exploratorio de Datos y Estadistica Descriptiva]                                                                                  | Intro a la Ciencia de Datos | Teoría |
+|    | [Notebook Analisis Exploratorio de Datos: Google Play]                | Analisis Exploratorio de Datos | Codigo |
+|    | [Notebook Analisis Exploratorio de Datos: Visualizaciones]                | Analisis Exploratorio de Datos | Codigo |
+| 02 | [Slides Teorema de Bayes y Preprocesamiento de datos]                                                                                 | Intro a la Ciencia de Datos | Teoría |
+|    | [Notebook Analisis Exploratorio de Datos: AirBnB]               | Analisis Exploratorio de Datos | Codigo |
+|    | [Notebook Analisis Exploratorio de Datos: Subtes]               | Analisis Exploratorio de Datos | Codigo |
+| 03 | [Slides aprendizaje supervisado: Clasificacion]                                                                                  | Aprendizaje Supervisado: Clasificacion | Teoría |
+|    | [Notebook Clasificacion: Wisconsin Breast Cancer dataset]                | Aprendizaje Supervisado: Clasificacion | Codigo |
+|    | [Notebook Clasificacion: Iris dataset]                | Aprendizaje Supervisado: Clasificacion | Codigo |
+| 04 | [Slides aprendizaje supervisado: Clasificacion]                                                                                 | Aprendizaje Supervisado: Clasificacion | Teoría |
+| 05 | [Slides aprendizaje supervisado: Regresion]                                                                                 | Aprendizaje Supervisado: Regresion | Teoría |
+| 06 | [Slides aprendizaje no supervisado: Clustering]                                                                                 | Aprendizaje No Supervisado: Clustering | Teoría |
+| 07 | [Slides aprendizaje no supervisado: Reduccion de la dimensionalidad]                                                                                  | Redes Neuronales | Teoría |
+| 08 | [Slides Redes Neuronales: Intro a Redes Neuronales]                                                                                  | Redes Neuronales | Teoría |
+| 09 | [Slides Redes Neuronales: Clasificacion con Redes Neuronales]                                                                                  | Redes Neuronales | Teoría |
+| 10 | [Slides Redes Neuronales: Reduccion de la dimensionalidad]                                                                                  | Redes Neuronales | Teoría |
+
+
