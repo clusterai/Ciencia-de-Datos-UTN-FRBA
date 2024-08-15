@@ -16,8 +16,9 @@ Docentes: Martin Palazzo, Nicolas Aguirre, Santiago Chas.
 
 | Item | Detalle |
 | --- | ----------- |
-| [Guía Anaconda y primeros pasos en Python](https://github.com/clusterai/Ciencia-de-Datos-UTN-FRBA/blob/main/clase00/instalar_python_jupyter.pdf)  | Tutorial para dar los primeros pasos en Jupyter Notebooks con Anaconda |
+| [Guía Instalacion Anaconda y primeros pasos en Python](https://github.com/clusterai/Ciencia-de-Datos-UTN-FRBA/blob/main/clase00/instalar_python_jupyter.pdf)  | Tutorial para dar los primeros pasos en Jupyter Notebooks con Anaconda |
 | [Notebook primeros pasos en Python](https://github.com/clusterai/Ciencia-de-Datos-UTN-FRBA/blob/main/clase00/python_primeros_pasos.ipynb)         | Jupyter Notebook para ejecutar los primeros comandos en Python |
+| [Videos tutorial Primeros pasos en Python](https://youtu.be/YBH1kyvDP2Y) | Tutorial de librerias Numpy, Pandas, Matplotlib y Seaborn |
 
 ## Clases Grabadas 2021
 [Link a clases grabadas](https://drive.google.com/drive/folders/1QxDKVhP1-FkBX-OwvqnN3ierbIAOF_PQ?usp=sharing)
