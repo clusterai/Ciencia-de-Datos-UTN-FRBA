@@ -10,14 +10,14 @@ Docentes: Martin Palazzo, Nicolas Aguirre, Santiago Chas.
 - [Bishop: Machine Learning and Pattern Recognition](http://users.isr.ist.utl.pt/~wurmd/Livros/school/Bishop%20-%20Pattern%20Recognition%20And%20Machine%20Learning%20-%20Springer%20%202006.pdf)
 
 ## Datasets
-- [Datasets 2023](https://drive.google.com/drive/folders/1yLJPVxs_XvBJYD8UKIP_nFJYPV9N_d1n?usp=sharing)
+- [Datasets](https://drive.google.com/drive/folders/1yLJPVxs_XvBJYD8UKIP_nFJYPV9N_d1n?usp=sharing)
 
 ## Primeros pasos Python:
 
 | Item | Detalle |
 | --- | ----------- |
-| [Guía Anaconda y primeros pasos en Python](https://github.com/clusterai/clusterai_2022/blob/main/clase00/instalar_python_jupyter.pdf)  | Tutorial para dar los primeros pasos en Jupyter Notebooks con Anaconda |
-| [Notebook primeros pasos en Python](https://github.com/clusterai/clusterai_2022/blob/main/clase00/python_primeros_pasos.ipynb)         | Jupyter Notebook para ejecutar los primeros comandos en Python |
+| [Guía Anaconda y primeros pasos en Python](https://github.com/clusterai/Ciencia-de-Datos-UTN-FRBA/blob/main/clase00/instalar_python_jupyter.pdf)  | Tutorial para dar los primeros pasos en Jupyter Notebooks con Anaconda |
+| [Notebook primeros pasos en Python](https://github.com/clusterai/Ciencia-de-Datos-UTN-FRBA/blob/main/clase00/python_primeros_pasos.ipynb)         | Jupyter Notebook para ejecutar los primeros comandos en Python |
 
 ## Clases Grabadas 2021
 [Link a clases grabadas](https://drive.google.com/drive/folders/1QxDKVhP1-FkBX-OwvqnN3ierbIAOF_PQ?usp=sharing)
