@@ -119,12 +119,20 @@ def load_subte_data_new(molinetes_path_new):
                     # Cargamos el archivo CSV con configuración específica para archivos nuevos
                     # delimiter=';' porque estos archivos usan punto y coma como separador
                     # engine='python' para mejor manejo de archivos problemáticos
+
                     current_df = pd.read_csv(
                         os.path.join(root, file),
                         delimiter=";",
                         engine="python",
                         encoding="latin-1",
+                        quoting=3
                     )
+
+                    # Limpiar nombres de columnas y valores con comillas
+                    current_df.columns = current_df.columns.str.replace('ï»¿"', '', regex=False)
+                    current_df.columns = current_df.columns.str.strip('"')
+                    if 'FECHA' in current_df.columns:
+                        current_df['FECHA'] = current_df['FECHA'].str.strip('"')
 
                     # Guardamos información de las columnas para debugging
                     list_of_colums.append(df.columns)
@@ -190,6 +198,8 @@ def clean_subte_dataframes(df):
         "AGÃ\x82Â³ERO",
         "AGÃ¯Â¿Â½ERO",
         "AGÃ\x82Â\x81ERO",
+        "AG\x81ERO", 
+        "AGÜERO", 
     ]
 
     # Reemplazamos todas las variaciones problemáticas de "AGÜERO" con la forma estándar
@@ -224,7 +234,8 @@ def clean_subte_dataframes(df):
     # Eliminamos cualquier fila que tenga al menos un valor nulo
     # how='any' significa que si ANY columna tiene NaN, elimina toda la fila
     # inplace=True modifica el DataFrame original en lugar de crear uno nuevo
-    df.dropna(how="any", inplace=True)
+    df = df.dropna(axis=1, thresh=len(df) * 0.5)  # elimina columnas con >50% NaN
+    df.dropna(how="any", inplace=True)              # elimina filas con cualquier NaN
 
     # Mostramos las dimensiones finales del dataset después de la limpieza
     print(
