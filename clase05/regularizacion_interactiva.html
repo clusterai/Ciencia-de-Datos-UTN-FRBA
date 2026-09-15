@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regularización interactiva — Ridge y Lasso</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #1a2030;
+    --panel2: #232b3d;
+    --text: #e6ebf5;
+    --muted: #9aa7bd;
+    --accent: #5aa9ff;
+    --ridge: #5aa9ff;
+    --lasso: #ff9f43;
+    --true: #4fd18b;
+    --grid: #2a3346;
+    --danger: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--grid); border-radius: 12px; padding: 18px; }
+  .control { margin-bottom: 18px; }
+  .control label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .control .val { color: var(--text); font-weight: 600; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .seg { display: flex; gap: 6px; }
+  .seg button {
+    flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--grid);
+    background: var(--panel2); color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 600;
+  }
+  .seg button.active { background: var(--accent); color: #06101f; border-color: var(--accent); }
+  .seg.lasso button.active { background: var(--lasso); border-color: var(--lasso); }
+  .btn {
+    width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--grid);
+    background: var(--panel2); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600;
+  }
+  .btn:hover { border-color: var(--accent); }
+  canvas { width: 100%; display: block; background: var(--panel); border-radius: 12px; }
+  .plots { display: grid; gap: 16px; }
+  .metrics { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+  .metric { background: var(--panel2); border: 1px solid var(--grid); border-radius: 10px; padding: 10px 14px; flex: 1; min-width: 120px; }
+  .metric .k { font-size: 12px; color: var(--muted); }
+  .metric .v { font-size: 20px; font-weight: 700; margin-top: 2px; }
+  .legend { display: flex; gap: 16px; font-size: 13px; color: var(--muted); margin: 4px 2px 0; flex-wrap: wrap; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .note { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 14px; border-top: 1px solid var(--grid); padding-top: 12px; }
+  .caption { font-size: 12px; color: var(--muted); margin: 6px 2px 0; }
+</style>
+</head>
+<body>
+  <h1>Regularización interactiva</h1>
+  <div class="sub">Jugá con el grado del modelo y la fuerza de la regularización (λ) para ver cómo Ridge y Lasso controlan el sobreajuste.</div>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="control">
+        <label>Modelo</label>
+        <div class="seg" id="modelSeg">
+          <button data-model="ridge" class="active">Ridge (L2)</button>
+          <button data-model="lasso">Lasso (L1)</button>
+        </div>
+      </div>
+
+      <div class="control">
+        <label>Fuerza de regularización λ = <span class="val" id="lambdaVal">0.00</span></label>
+        <input type="range" id="lambda" min="-3" max="2" step="0.02" value="-3">
+        <div class="caption">De 0.001 (casi sin regularizar) a 100 (muy fuerte)</div>
+      </div>
+
+      <div class="control">
+        <label>Grado del polinomio = <span class="val" id="degVal">9</span></label>
+        <input type="range" id="degree" min="1" max="14" step="1" value="9">
+        <div class="caption">Más grado = modelo más flexible (más propenso a sobreajustar)</div>
+      </div>
+
+      <div class="control">
+        <label>Ruido de los datos = <span class="val" id="noiseVal">0.20</span></label>
+        <input type="range" id="noise" min="0" max="0.6" step="0.01" value="0.2">
+      </div>
+
+      <div class="control">
+        <label>Cantidad de puntos = <span class="val" id="nVal">20</span></label>
+        <input type="range" id="npts" min="8" max="60" step="1" value="20">
+      </div>
+
+      <button class="btn" id="regen">↻ Generar nuevos datos</button>
+
+      <div class="note" id="note"></div>
+    </div>
+
+    <div class="plots">
+      <div>
+        <canvas id="fitCanvas" width="720" height="420"></canvas>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--true)"></span>Función real</span>
+          <span><span class="dot" style="background:var(--accent)"></span>Ajuste del modelo</span>
+          <span><span class="dot" style="background:#c9d4e6"></span>Datos (train)</span>
+          <span><span class="dot" style="background:var(--danger)"></span>Datos (test)</span>
+        </div>
+        <div class="metrics">
+          <div class="metric"><div class="k">RMSE train</div><div class="v" id="rmseTr">–</div></div>
+          <div class="metric"><div class="k">RMSE test</div><div class="v" id="rmseTe">–</div></div>
+          <div class="metric"><div class="k">Norma de pesos</div><div class="v" id="norm">–</div></div>
+          <div class="metric"><div class="k">Pesos ≈ 0</div><div class="v" id="zeros">–</div></div>
+        </div>
+      </div>
+      <div>
+        <canvas id="coefCanvas" width="720" height="200"></canvas>
+        <div class="caption">Magnitud de cada coeficiente (uno por potencia del polinomio). Con Lasso, muchos se vuelven exactamente cero.</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ---------- utilidades de álgebra ----------
+function transpose(A){const r=A.length,c=A[0].length,T=[];for(let j=0;j<c;j++){T[j]=[];for(let i=0;i<r;i++)T[j][i]=A[i][j];}return T;}
+function matmul(A,B){const r=A.length,n=B.length,c=B[0].length,C=[];for(let i=0;i<r;i++){C[i]=new Array(c).fill(0);for(let k=0;k<n;k++){const a=A[i][k];for(let j=0;j<c;j++)C[i][j]+=a*B[k][j];}}return C;}
+function matvec(A,v){return A.map(row=>row.reduce((s,a,j)=>s+a*v[j],0));}
+// resuelve (M) w = b  por eliminación gaussiana con pivoteo
+function solve(M,b){
+  const n=M.length;const A=M.map((r,i)=>[...r,b[i]]);
+  for(let col=0;col<n;col++){
+    let piv=col;for(let r=col+1;r<n;r++)if(Math.abs(A[r][col])>Math.abs(A[piv][col]))piv=r;
+    [A[col],A[piv]]=[A[piv],A[col]];
+    const d=A[col][col]||1e-12;
+    for(let r=0;r<n;r++){if(r===col)continue;const f=A[r][col]/d;for(let c=col;c<=n;c++)A[r][c]-=f*A[col][c];}
+  }
+  return A.map((r,i)=>r[n]/(r[i]||1e-12));
+}
+
+// ---------- generación de datos ----------
+let seed=42;
+function rand(){seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;}
+function gauss(){let u=0,v=0;while(u===0)u=rand();while(v===0)v=rand();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function trueFn(x){return Math.sin(2.3*x)*0.8 + 0.3*x;} // función objetivo
+
+let data={xtr:[],ytr:[],xte:[],yte:[]};
+function genData(){
+  const n=+document.getElementById('npts').value;
+  const noise=+document.getElementById('noise').value;
+  const xs=[];for(let i=0;i<n;i++)xs.push(-1+2*rand());
+  xs.sort((a,b)=>a-b);
+  const ys=xs.map(x=>trueFn(x)+noise*gauss());
+  // 70/30 intercalado
+  data={xtr:[],ytr:[],xte:[],yte:[]};
+  xs.forEach((x,i)=>{if(i%10<7){data.xtr.push(x);data.ytr.push(ys[i]);}else{data.xte.push(x);data.yte.push(ys[i]);}});
+}
+
+// ---------- features polinómicas estandarizadas ----------
+function polyFeatures(xs,deg){return xs.map(x=>{const row=[];let p=x;for(let d=1;d<=deg;d++){row.push(p);p*=x;}return row;});}
+function standardize(X){
+  const n=X.length,m=X[0].length,mean=new Array(m).fill(0),std=new Array(m).fill(0);
+  for(let j=0;j<m;j++){for(let i=0;i<n;i++)mean[j]+=X[i][j];mean[j]/=n;}
+  for(let j=0;j<m;j++){for(let i=0;i<n;i++)std[j]+=(X[i][j]-mean[j])**2;std[j]=Math.sqrt(std[j]/n)||1e-9;}
+  const Z=X.map(row=>row.map((v,j)=>(v-mean[j])/std[j]));
+  return {Z,mean,std};
+}
+function applyStd(X,mean,std){return X.map(row=>row.map((v,j)=>(v-mean[j])/std[j]));}
+
+// ---------- Ridge (forma cerrada) ----------
+function ridgeFit(Z,y,lam){
+  const Zt=transpose(Z),ZtZ=matmul(Zt,Z),m=ZtZ.length;
+  for(let i=0;i<m;i++)ZtZ[i][i]+=lam;
+  return solve(ZtZ,matvec(Zt,y));
+}
+// ---------- Lasso (coordinate descent) ----------
+function lassoFit(Z,y,lam){
+  const n=Z.length,m=Z[0].length,w=new Array(m).fill(0);
+  const col2=new Array(m).fill(0);
+  for(let j=0;j<m;j++)for(let i=0;i<n;i++)col2[j]+=Z[i][j]*Z[i][j];
+  let pred=new Array(n).fill(0);
+  for(let it=0;it<300;it++){
+    let maxd=0;
+    for(let j=0;j<m;j++){
+      let rho=0;const wj=w[j];
+      for(let i=0;i<n;i++){const r=y[i]-pred[i]+Z[i][j]*wj;rho+=Z[i][j]*r;}
+      let nw=Math.sign(rho)*Math.max(Math.abs(rho)-lam*n,0)/(col2[j]||1e-9);
+      const dif=nw-wj;
+      if(dif!==0){for(let i=0;i<n;i++)pred[i]+=Z[i][j]*dif;w[j]=nw;maxd=Math.max(maxd,Math.abs(dif));}
+    }
+    if(maxd<1e-6)break;
+  }
+  return w;
+}
+
+// ---------- estado / render ----------
+let model='ridge';
+const $=id=>document.getElementById(id);
+
+function compute(){
+  const deg=+$('degree').value;
+  const lam=Math.pow(10,+$('lambda').value);
+  const Xtr=polyFeatures(data.xtr,deg);
+  const {Z,mean,std}=standardize(Xtr);
+  const ymean=data.ytr.reduce((a,b)=>a+b,0)/data.ytr.length;
+  const yc=data.ytr.map(v=>v-ymean);
+  const w = model==='ridge' ? ridgeFit(Z,yc,lam) : lassoFit(Z,yc,lam);
+  const predStd=(xs)=>{const Zx=applyStd(polyFeatures(xs,deg),mean,std);return matvec(Zx,w).map(v=>v+ymean);};
+  const ptr=predStd(data.xtr),pte=predStd(data.xte);
+  const rmse=(a,b)=>Math.sqrt(a.reduce((s,v,i)=>s+(v-b[i])**2,0)/a.length);
+  return {w,deg,lam,predStd,rmseTr:rmse(ptr,data.ytr),rmseTe:rmse(pte,data.yte),mean,std,ymean};
+}
+
+function draw(){
+  const R=compute();
+  // --- fit canvas ---
+  const cv=$('fitCanvas'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const pad=36,x0=-1.05,x1=1.05;
+  let y0=-1.6,y1=1.6;
+  const X=x=>pad+(x-x0)/(x1-x0)*(W-2*pad);
+  const Y=y=>H-pad-(y-y0)/(y1-y0)*(H-2*pad);
+  // grid
+  ctx.strokeStyle='#2a3346';ctx.lineWidth=1;ctx.fillStyle='#6c7891';ctx.font='11px system-ui';
+  for(let gx=-1;gx<=1;gx+=0.5){ctx.beginPath();ctx.moveTo(X(gx),pad);ctx.lineTo(X(gx),H-pad);ctx.stroke();ctx.fillText(gx.toFixed(1),X(gx)-8,H-pad+16);}
+  for(let gy=-1.5;gy<=1.5;gy+=0.5){ctx.beginPath();ctx.moveTo(pad,Y(gy));ctx.lineTo(W-pad,Y(gy));ctx.stroke();ctx.fillText(gy.toFixed(1),4,Y(gy)+4);}
+  // true fn
+  ctx.strokeStyle='#4fd18b';ctx.lineWidth=2;ctx.beginPath();
+  for(let i=0;i<=200;i++){const x=x0+(x1-x0)*i/200;i===0?ctx.moveTo(X(x),Y(trueFn(x))):ctx.lineTo(X(x),Y(trueFn(x)));}ctx.stroke();
+  // fit curve (dense)
+  const grid=[];for(let i=0;i<=200;i++)grid.push(x0+(x1-x0)*i/200);
+  const gy=R.predStd(grid);
+  ctx.strokeStyle=model==='ridge'?'#5aa9ff':'#ff9f43';ctx.lineWidth=2.5;ctx.beginPath();
+  grid.forEach((x,i)=>{const yy=Math.max(y0,Math.min(y1,gy[i]));i===0?ctx.moveTo(X(x),Y(yy)):ctx.lineTo(X(x),Y(yy));});ctx.stroke();
+  // points
+  data.xtr.forEach((x,i)=>{ctx.fillStyle='#c9d4e6';ctx.beginPath();ctx.arc(X(x),Y(data.ytr[i]),4,0,7);ctx.fill();});
+  data.xte.forEach((x,i)=>{ctx.fillStyle='#ff6b6b';ctx.beginPath();ctx.arc(X(x),Y(data.yte[i]),4,0,7);ctx.fill();});
+
+  // --- coef canvas ---
+  const cc=$('coefCanvas'),cx=cc.getContext('2d'),CW=cc.width,CH=cc.height;
+  cx.clearRect(0,0,CW,CH);
+  const w=R.w,m=w.length,maxw=Math.max(0.01,...w.map(Math.abs));
+  const bw=(CW-40)/m,base=CH-24;
+  cx.fillStyle='#6c7891';cx.font='11px system-ui';
+  for(let j=0;j<m;j++){
+    const h=Math.abs(w[j])/maxw*(CH-50);
+    const zero=Math.abs(w[j])<1e-4;
+    cx.fillStyle=zero?'#39415a':(model==='ridge'?'#5aa9ff':'#ff9f43');
+    cx.fillRect(24+j*bw+2,base-h,bw-4,h);
+    cx.fillStyle='#6c7891';cx.fillText('x'+(j+1),24+j*bw+2,base+14);
+  }
+  cx.strokeStyle='#2a3346';cx.beginPath();cx.moveTo(20,base);cx.lineTo(CW-8,base);cx.stroke();
+
+  // metrics
+  $('rmseTr').textContent=R.rmseTr.toFixed(3);
+  $('rmseTe').textContent=R.rmseTe.toFixed(3);
+  $('norm').textContent=Math.sqrt(w.reduce((s,v)=>s+v*v,0)).toFixed(2);
+  $('zeros').textContent=w.filter(v=>Math.abs(v)<1e-4).length+' / '+m;
+
+  // labels
+  $('lambdaVal').textContent=R.lam.toFixed(R.lam<1?3:2);
+  $('degVal').textContent=R.deg;
+  $('noiseVal').textContent=(+$('noise').value).toFixed(2);
+  $('nVal').textContent=$('npts').value;
+
+  // note dinámica
+  let msg='';
+  if(R.lam<0.01 && R.deg>=8) msg='λ muy chico y grado alto → el modelo se pega a los datos (RMSE train bajo, RMSE test alto): <b>sobreajuste</b>.';
+  else if(R.lam>10) msg='λ muy grande → los pesos se aplastan hacia cero y la curva se aplana: <b>subajuste</b>.';
+  else msg='Buscá el equilibrio: el mejor λ es el que minimiza el <b>RMSE de test</b>, no el de train.';
+  if(model==='lasso') msg+=' Con <b>Lasso</b> mirá cómo varios coeficientes caen exactamente a 0 (selección de features).';
+  else msg+=' Con <b>Ridge</b> los pesos se achican pero casi nunca llegan a 0 exacto.';
+  $('note').innerHTML=msg;
+}
+
+// ---------- eventos ----------
+document.querySelectorAll('#modelSeg button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#modelSeg button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');model=b.dataset.model;
+  document.getElementById('modelSeg').classList.toggle('lasso',model==='lasso');
+  draw();
+}));
+['lambda','degree','noise','npts'].forEach(id=>$(id).addEventListener('input',()=>{
+  if(id==='noise'||id==='npts'){genData();}draw();
+}));
+$('regen').addEventListener('click',()=>{seed=Math.floor(Math.random()*1e7)+1;genData();draw();});
+
+genData();draw();
+</script>
+</body>
+</html>
